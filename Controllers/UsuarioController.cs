@@ -8,9 +8,14 @@ namespace chatApi.Controllers
     [Route("api/usuarios")]
     public class UsuarioController : ControllerBase
     {
-        [HttpGet]
-        public async Task<ActionResult<string>> Get([FromBody] ValidarUsuarioModel usuario)
+        [HttpGet("validar/{id}/{password}")]
+        public async Task<ActionResult<string>> ValidarUsuario(string id, string password)
         {
+            var usuario = new ValidarUsuarioModel
+            {
+                Id = id,
+                Password = password
+            };
             var funcion = new UsuarioData();
             return await funcion.ValidarUsuario(usuario);
         }
