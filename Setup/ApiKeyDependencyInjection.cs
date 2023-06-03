@@ -10,7 +10,7 @@ namespace chatApi.Setup
         }
         public static void UseApiTokenMiddleware(this WebApplication webApp)
         {
-            webApp.UseWhen(predicate: context => !context.Request.Path.StartsWithSegments(other: "/healt"),
+            webApp.UseWhen(predicate: context => !context.Request.Path.StartsWithSegments(other: "/health"),
                 configuration:appBuilder => appBuilder.UseMiddleware<ApiKeyMiddleware>() 
             );
         }
