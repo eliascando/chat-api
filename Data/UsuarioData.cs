@@ -60,6 +60,112 @@ namespace chatApi.Data
                 }
             }
         }
+        public async Task<List<ListarUsuarioModel>>ListarUsuarios()
+        {
+            var lista = new List<ListarUsuarioModel>();
+            using (var sql = new SqlConnection(cn.cadenaSQL()))
+            {
+                using (var cmd = new SqlCommand("ListarUsuarios", sql))
+                {
+                    await sql.OpenAsync();
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    using (var item = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await item.ReadAsync())
+                        {
+                            var usuario = new ListarUsuarioModel();
+                            usuario.Id = (string)item["id"];
+                            usuario.Usuario = (string)item["nombre"];
+                            usuario.Imagen = (string)item["imagen"];
+                            lista.Add(usuario);
+                        }
+                    }
+                }
+            }
+            return lista;
+        }
+        public async Task<List<ListarAmigosModel>> ListarAmigos(string id)
+        {
+            var lista = new List<ListarAmigosModel>();
+            using (var sql = new SqlConnection(cn.cadenaSQL()))
+            {
+                using (var cmd = new SqlCommand("ListarAmigos", sql))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@IdUsuario", id);
+                    await sql.OpenAsync();
+                    using (var item = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await item.ReadAsync())
+                        {
+                            var amigo = new ListarAmigosModel();
+                            amigo.Id = (string)item["IdAmigo"];
+                            amigo.Usuario = (string)item["NombreAmigo"];
+                            amigo.Imagen = (string)item["ImagenAmigo"];
+                            amigo.IdRoom = (int)item["idRoom"];
+                            lista.Add(amigo);
+                        }
+                    }
+                }
+            }
+            return lista;
+        }
+        public async Task EnviarSolicitud(string idSender, string idRequested)
+        {
+            using (var sql = new SqlConnection(cn.cadenaSQL()))
+            {
+                using (var cmd = new SqlCommand("EnviarSolicitud", sql))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@idUserSend", idSender);
+                    cmd.Parameters.AddWithValue("@idUserReq",idRequested);
+
+                    await sql.OpenAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+        public async Task AtenderSolicitud(string idResponse, string idReq, string response)
+        {
+            using (var sql = new SqlConnection(cn.cadenaSQL()))
+            {
+                using (var cmd = new SqlCommand("AtenderSolicitud", sql))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@IdUsuarioResponse", idResponse);
+                    cmd.Parameters.AddWithValue("@IdUsuarioReq", idReq);
+                    cmd.Parameters.AddWithValue("@Respuesta", response);
+
+                    await sql.OpenAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+        public async Task<List<ListarUsuarioModel>> ObtenerNotificaciones(string id)
+        {
+            var lista = new List<ListarUsuarioModel>();
+            using (var sql = new SqlConnection(cn.cadenaSQL()))
+            {
+                using (var cmd = new SqlCommand("ObtenerNotificaciones", sql))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@IdUsuario", id);
+                    await sql.OpenAsync();
+                    using (var item = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await item.ReadAsync())
+                        {
+                            var usuario = new ListarUsuarioModel();
+                            usuario.Id = (string)item["idUsuarioSend"];
+                            usuario.Usuario = (string)item["Nombre"];
+                            usuario.Imagen = (string)item["Imagen"];
+                            lista.Add(usuario);
+                        }
+                    }
+                }
+            }
+            return lista;
+        }
         public static string Encrypt(string entrada)
         {
             Sha3Digest sha3 = new Sha3Digest(256);

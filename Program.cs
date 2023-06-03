@@ -1,13 +1,16 @@
-var builder = WebApplication.CreateBuilder(args);
+using chatApi.Setup;
+using System.Configuration;
 
-// Add services to the container.
+WebApplication app = DefaultWebApplication.Create(args, webappBuilder: webappBuilder =>
+{
+    webappBuilder.Services.AddApiToken(webappBuilder.Configuration);
+    webappBuilder.Services.AddControllers();
+    webappBuilder.Services.AddEndpointsApiExplorer();
+    webappBuilder.Services.AddSwaggerGen();
+});
 
-builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -22,4 +25,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+app.UseApiTokenMiddleware();
+
+DefaultWebApplication.Run(app);
