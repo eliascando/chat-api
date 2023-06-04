@@ -9,11 +9,11 @@ namespace chatApi.Controllers
     [Route("api/usuarios")]
     public class UsuarioController : ControllerBase
     {
-        [HttpGet("listar")]
-        public async Task<ActionResult<List<ListarUsuarioModel>>> ListarUsuarios()
+        [HttpGet("listar/{id}")]
+        public async Task<ActionResult<List<ListarUsuarioModel>>> ListarUsuarios(string id)
         {
             var funcion = new UsuarioData();
-            var lista = await funcion.ListarUsuarios();
+            var lista = await funcion.ListarUsuarios(id);
             return Ok(lista);
         }
         [HttpGet("validar/{id}/{password}")]

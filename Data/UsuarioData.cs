@@ -20,6 +20,7 @@ namespace chatApi.Data
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@id", usuario.Id);
                     cmd.Parameters.AddWithValue("@nombre", usuario.Usuario);
+                    cmd.Parameters.AddWithValue("@imagen", usuario.Imagen);
                     cmd.Parameters.AddWithValue("@password", Encrypt(usuario.Password));
 
                     SqlParameter registroExitoso = new SqlParameter("@Exito", SqlDbType.Bit)
@@ -60,15 +61,16 @@ namespace chatApi.Data
                 }
             }
         }
-        public async Task<List<ListarUsuarioModel>>ListarUsuarios()
+        public async Task<List<ListarUsuarioModel>>ListarUsuarios(string id)
         {
             var lista = new List<ListarUsuarioModel>();
             using (var sql = new SqlConnection(cn.cadenaSQL()))
             {
                 using (var cmd = new SqlCommand("ListarUsuarios", sql))
                 {
-                    await sql.OpenAsync();
                     cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@IdUsuario", id);
+                    await sql.OpenAsync();
                     using (var item = await cmd.ExecuteReaderAsync())
                     {
                         while (await item.ReadAsync())
