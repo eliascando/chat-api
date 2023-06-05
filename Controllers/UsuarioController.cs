@@ -1,6 +1,8 @@
 ﻿using chatApi.Data;
 using chatApi.Model;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Utilities.Encoders;
+using System.Text;
 
 namespace chatApi.Controllers
 {
@@ -17,7 +19,7 @@ namespace chatApi.Controllers
             return Ok(lista);
         }
         [HttpGet("validar/{id}/{password}")]
-        public async Task<ActionResult<string>> ValidarUsuario(string id, string password)
+        public async Task<ActionResult<ListarUsuarioModel>> ValidarUsuario(string id, string password)
         {
             var usuario = new ValidarUsuarioModel
             {
@@ -25,8 +27,17 @@ namespace chatApi.Controllers
                 Password = password
             };
             var funcion = new UsuarioData();
-            return await funcion.ValidarUsuario(usuario);
+            var usuarioEncontrado = await funcion.ValidarUsuario(usuario);
+            if (usuarioEncontrado != null)
+            {
+                return Ok(usuarioEncontrado);
+            }
+            else
+            {
+                return NotFound();
+            }
         }
+
         [HttpPost]
         public async Task<bool> NuevoUsuario([FromBody] UsuarioModel usuario)
         {
@@ -76,6 +87,22 @@ namespace chatApi.Controllers
             var funcion = new UsuarioData();
             var lista = await funcion.ObtenerNotificaciones(id);
             return Ok(lista);
+        }
+    }
+    // Controlador de Notificaciones
+    [ApiController]
+    [Route("api/datos")]
+    public class DatosController : ControllerBase
+    {
+        [HttpPut("imagen/{id}/{imagen}")]
+        public async Task<ActionResult> GuardarImagen(string id, string imagen)
+        {
+            var funcion = new UsuarioData();
+            string imageEncoded = imagen;
+            string imageDecoded = Encoding.UTF8.GetString(Convert.FromBase64String(imageEncoded));
+
+            await funcion.GuardarImagen(id, imageDecoded);
+            return Ok();
         }
     }
 }

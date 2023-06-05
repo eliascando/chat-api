@@ -1,6 +1,7 @@
 ﻿using chatApi.Conexion;
 using chatApi.Model;
 using Org.BouncyCastle.Crypto.Digests;
+using Org.BouncyCastle.Ocsp;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
@@ -37,7 +38,7 @@ namespace chatApi.Data
                 }
             }
         }
-        public async Task<string>ValidarUsuario(ValidarUsuarioModel usuario)
+        public async Task<ListarUsuarioModel> ValidarUsuario(ValidarUsuarioModel usuario)
         {
             using (var sql = new SqlConnection(cn.cadenaSQL()))
             {
@@ -47,17 +48,20 @@ namespace chatApi.Data
                     cmd.Parameters.AddWithValue("@id", usuario.Id);
                     cmd.Parameters.AddWithValue("@password", Encrypt(usuario.Password));
 
-                    SqlParameter usuarioNombre = new SqlParameter("@User", SqlDbType.VarChar, 50)
-                    {
-                        Direction = ParameterDirection.Output
-                    };
-
-                    cmd.Parameters.Add(usuarioNombre);
-
                     await sql.OpenAsync();
-                    await cmd.ExecuteNonQueryAsync();
+                    using (var item = await cmd.ExecuteReaderAsync())
+                    {
+                        var usuarioEncontrado = new ListarUsuarioModel();
 
-                    return (string)usuarioNombre.Value;
+                        while (await item.ReadAsync())
+                        {
+                            usuarioEncontrado.Id = (string)item["id"];
+                            usuarioEncontrado.Usuario = (string)item["nombre"];
+                            usuarioEncontrado.Imagen = (string)item["imagen"];
+                        }
+
+                        return usuarioEncontrado;
+                    }
                 }
             }
         }
@@ -167,6 +171,21 @@ namespace chatApi.Data
                 }
             }
             return lista;
+        }
+        public async Task GuardarImagen(string id, string imagen)
+        {
+            using (var sql = new SqlConnection(cn.cadenaSQL()))
+            {
+                using (var cmd = new SqlCommand("GuardarImagen", sql))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@IdUsuario", id);
+                    cmd.Parameters.AddWithValue("@Imagen", imagen);
+
+                    await sql.OpenAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
         }
         public static string Encrypt(string entrada)
         {
